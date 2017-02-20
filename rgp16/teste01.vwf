@@ -1,8 +1,8 @@
 /*<simulation_settings>
-<ftestbench_cmd>quartus_eda --gen_testbench --tool=modelsim_oem --format=verilog --write_settings_files=off rgp16 -c rgp16 --vector_source="/home/tiagomatos/projects/rgp16/teste01.vwf" --testbench_file="/home/tiagomatos/projects/rgp16/simulation/qsim/teste01.vwf.vt"</ftestbench_cmd>
-<ttestbench_cmd>quartus_eda --gen_testbench --tool=modelsim_oem --format=verilog --write_settings_files=off rgp16 -c rgp16 --vector_source="/home/tiagomatos/projects/rgp16/teste01.vwf" --testbench_file="/home/tiagomatos/projects/rgp16/simulation/qsim/teste01.vwf.vt"</ttestbench_cmd>
-<fnetlist_cmd>quartus_eda --write_settings_files=off --simulation --functional=on --flatten_buses=off --tool=modelsim_oem --format=verilog --output_directory="/home/tiagomatos/projects/rgp16/simulation/qsim/" rgp16 -c rgp16</fnetlist_cmd>
-<tnetlist_cmd>quartus_eda --write_settings_files=off --simulation --functional=off --flatten_buses=off --timescale=1ps --tool=modelsim_oem --format=verilog --output_directory="/home/tiagomatos/projects/rgp16/simulation/qsim/" rgp16 -c rgp16</tnetlist_cmd>
+<ftestbench_cmd>quartus_eda --gen_testbench --tool=modelsim_oem --format=verilog --write_settings_files=off rgp16 -c rgp16 --vector_source="./teste01.vwf" --testbench_file="./simulation/qsim/teste01.vwf.vt"</ftestbench_cmd>
+<ttestbench_cmd>quartus_eda --gen_testbench --tool=modelsim_oem --format=verilog --write_settings_files=off rgp16 -c rgp16 --vector_source="./teste01.vwf" --testbench_file="./simulation/qsim/teste01.vwf.vt"</ttestbench_cmd>
+<fnetlist_cmd>quartus_eda --write_settings_files=off --simulation --functional=on --flatten_buses=off --tool=modelsim_oem --format=verilog --output_directory="./simulation/qsim/" rgp16 -c rgp16</fnetlist_cmd>
+<tnetlist_cmd>quartus_eda --write_settings_files=off --simulation --functional=off --flatten_buses=off --timescale=1ps --tool=modelsim_oem --format=verilog --output_directory="./simulation/qsim/" rgp16 -c rgp16</tnetlist_cmd>
 <modelsim_script>onerror {exit -code 1}
 vlib work
 vlog -work work rgp16.vo
