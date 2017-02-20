@@ -1,0 +1,2 @@
+de2i_150_revc_golden_top.qar
+de2i_150_revc_golden_top.qp_info
