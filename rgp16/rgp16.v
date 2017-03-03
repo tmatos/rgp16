@@ -112,6 +112,51 @@ module rgp16( input wire clock,
                   .imedi_out(w_ex_imedi),
                   .tem_bis(w_id_instruc[15]), 
                   .clk(clock) );
+                  
+   wire [15:0] w_ex_a_reg;
+   wire [15:0] w_ex_b_reg;
+   wire [15:0] w_ex_imedi;
+   
+   wire w_ex_memwrite;
+   assign DBG_SET_MEMWRITE = w_ex_memwrite;
+  
+   wire [7:0] w_ex_ulactrl_opcode_in;
+                       
+   wire w_ex_amux_sel;
+   wire w_ex_bmux_sel;
+   wire [3:0] w_ex_ulaop;
+  
+   ula_control ula_ctr0 ( .opcode_in(w_ex_ulactrl_opcode_in),
+                          .ula_amuxsel_out(w_ex_amux_sel),
+                          .ula_bmuxsel_out(w_ex_bmux_sel),
+                          .ulaop_out(w_ex_ulaop)
+                        );
+   
+   //wire
+                    
+   wire [15:0] w_ex_ula_aterm;
+   wire [15:0] w_ex_ula_bterm;
+   
+   mux2pra1 mux_a ( .in0(w_ex_a_reg),
+                    .in1(16'h0000),
+                    .sel(w_ex_amux_sel),
+                    .out(w_ex_ula_aterm) );
+   
+   mux2pra1 mux_b ( .in0(w_ex_b_reg),
+                    .in1(w_ex_imedi),
+                    .sel(w_ex_bmux_sel),
+                    .out(w_ex_ula_bterm) );
+   
+   ula ula0 ( .a(w_ex_ula_aterm),
+              .b(w_ex_ula_bterm),
+              .result(DBG_RESULT),
+              /*carryout, over,*/
+              .aluop(w_ex_ulaop) );
+              
+   assign DBG_A = w_ex_a_reg;
+   assign DBG_B = w_ex_b_reg;
+   assign DBG_IMED = w_ex_imedi;
+   assign DBG_ALU_OP = w_ex_ulaop;
 
 endmodule
 
@@ -157,8 +202,6 @@ module id_ex(a_in, a_out,
    output reg [15:0] a_out;
    input [15:0] b_in;
    output reg [15:0] b_out;
-   //input [4:0] aluop_in;
-   //output reg [4:0] aluop_out;
    input [3:0] destreg_in;
    output reg [3:0] destreg_out;
    input set_regwrite_in;
@@ -180,7 +223,6 @@ module id_ex(a_in, a_out,
       if (bis == 0) begin
          a_out <= a_in;
          b_out <= b_in;
-         //aluop_out <= aluop_in;
          destreg_out <= destreg_in;
          set_regwrite_out <= set_regwrite_in;
          set_memwrite_out <= set_memwrite_in;
@@ -191,7 +233,6 @@ module id_ex(a_in, a_out,
       else if (bis == 1) begin
          a_out <= a_in;
          b_out <= b_in;
-         //aluop_out <= aluop_in;
          destreg_out <= destreg_in;
          set_regwrite_out <= set_regwrite_in;
          set_memwrite_out <= set_memwrite_in;
@@ -202,6 +243,63 @@ module id_ex(a_in, a_out,
    end
    
 endmodule
+
+///////////////////////////////////////////////////////////////////////////////
+// ex_mem interface
+///////////////////////////////////////////////////////////////////////////////
+module ex_mem( set_regwrite_in, set_regwrite_out,
+               destreg_in, destreg_out,
+               set_memwrite_in, set_memwrite_out,
+               memwrite_addr_in, memwrite_addr_out,
+               result_in, result_out,
+               tem_bis, clk
+             );
+
+   input set_regwrite_in;
+   output reg set_regwrite_out;
+   input [3:0] destreg_in;
+   output reg [3:0] destreg_out;
+   input set_memwrite_in;
+   output reg set_memwrite_out;
+   input [15:0] memwrite_addr_in;
+   output reg [15:0] memwrite_addr_out;
+   input [15:0] result_in;
+   output reg [15:0] result_out;
+   input tem_bis;
+   input clk;
+   
+   reg bis; // indica se estamos lendo ainda a segunda word da instruc.
+   
+   initial bis = 0;
+   
+   always @(posedge clk) begin
+      if (bis == 0) begin
+         set_regwrite_out <= set_regwrite_in;
+         destreg_out <= destreg_in;
+         set_memwrite_out <= set_memwrite_in;
+         memwrite_addr_out <= memwrite_addr_in;
+         result_out <= result_in;
+         bis <= tem_bis;
+      end
+      else if (bis == 1) begin
+         set_regwrite_out <= set_regwrite_in;
+         destreg_out <= destreg_in;
+         set_memwrite_out <= set_memwrite_in;
+         memwrite_addr_out <= memwrite_addr_in;
+         result_out <= result_in;
+         bis <= 0;
+      end
+   end
+             
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////
+// mem_wb interface
+///////////////////////////////////////////////////////////////////////////////
+//module ex_mem(a_in, a_out,
+//              b_in, b_out,
+//              clk );
+//endmodule
 
 ///////////////////////////////////////////////////////////////////////////////
 // PC
@@ -446,4 +544,87 @@ module registers(sel_reg0, sel_reg1, reg0_out, reg1_out,
       endcase
    end
 
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////
+// ULA
+///////////////////////////////////////////////////////////////////////////////
+module ula(a, b, result, /*carryout, over,*/ aluop);
+   input [15:0] a;
+   input [15:0] b;
+   input [3:0] aluop;
+   output reg [15:0] result;
+   //output carryout;
+   //output over;
+   
+   always @(a, b, aluop) begin
+      case (aluop)
+         4'h0: result <= a & b;
+         4'h1: result <= a | b;
+         4'h5: result <= a + b;
+         4'h6: result <= a - b;
+         4'h9: result <= a < b ? 16'h0001 : 16'h0000; 
+         // ...
+         default: result <= 0;
+      endcase
+   end
+   
+endmodule
+
+///////////////////////////////////////////////////////////////////////////////
+// ULA control
+///////////////////////////////////////////////////////////////////////////////
+module ula_control(opcode_in, ula_amuxsel_out, ula_bmuxsel_out, ulaop_out);
+   parameter LW   = 8'b11000001;
+   parameter LW1  = 8'b10100001;
+   parameter SW   = 8'b11000010;
+   parameter ADD  = 8'b01000011;
+   parameter SUB  = 8'b01000100;
+   parameter MUL  = 8'b01000101;
+   parameter DIV  = 8'b01000110;
+   parameter AND  = 8'b01000111;
+   parameter OR   = 8'b01001000;
+   parameter CMP  = 8'b01001001;
+   parameter NOT  = 8'b00101010;
+   
+   input [7:0] opcode_in;
+   output reg ula_amuxsel_out; // seleciona operando a da ula, 0 para a, 1 para 0x0000
+   output reg ula_bmuxsel_out; // seleciona operando b da ula, 0 para b, 1 para imediato
+   output reg [3:0] ulaop_out; // seleciona qual operacao da ula
+   
+   always @(opcode_in) begin
+      if (opcode_in == AND) begin
+         ulaop_out <= 4'h0;
+         ula_amuxsel_out <= 0;
+         ula_bmuxsel_out <= 0;
+      end
+      else if (opcode_in == OR) begin
+         ulaop_out <= 4'h1;
+         ula_amuxsel_out <= 0;
+         ula_bmuxsel_out <= 0;
+      end
+      if (opcode_in == ADD) begin
+         ulaop_out <= 4'h5;
+         ula_amuxsel_out <= 0;
+         ula_bmuxsel_out <= 0;
+      end
+      else if (opcode_in == LW) begin
+         ulaop_out <= 4'h5;  ///??? louk
+         ula_amuxsel_out <= 0; ///??? louk
+         ula_bmuxsel_out <= 0; ///??? louk
+      end
+      else if (opcode_in == LW1) begin
+         ulaop_out <= 4'h5;
+         ula_amuxsel_out <= 1;
+         ula_bmuxsel_out <= 1;
+      end
+      else begin // um default
+         ulaop_out <= 4'h0;
+         ula_amuxsel_out <= 0;
+         ula_bmuxsel_out <= 0;
+      end
+   end
+   
+   // rascunho...
+   
 endmodule
