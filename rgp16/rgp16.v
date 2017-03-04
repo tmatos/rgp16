@@ -164,22 +164,33 @@ endmodule
 // if_id interface (ciente dos casos de inst. de 16+16 bits)
 ///////////////////////////////////////////////////////////////////////////////
 module if_id(data_in, instruc_out, imediat_out, clk);
+   parameter NOP  = 16'b0000111100000000;
+
    input [15:0]data_in;
    output reg [15:0] instruc_out;
    output reg [15:0] imediat_out;
    input clk;
    
    reg bis; // indica se estamos lendo ainda a segunda word da instruc.
+   reg [15:0] tmp; // guarda temp. uma word da instrucao
    
    initial bis = 0;
    
    always @(posedge clk) begin
       if (bis == 0) begin
-         instruc_out <= data_in;
-         imediat_out <= 16'h0000;
-         bis <= data_in[15];
+         if (data_in[15] == 1'b1) begin // caso instrucao de 32 bits
+            instruc_out <= NOP;
+            imediat_out <= 16'h0000;
+            tmp = data_in;
+            bis <= data_in[15];
+         end
+         else begin // caso de 16 bits
+            instruc_out <= data_in;
+            imediat_out <= 16'h0000;
+         end
       end
       else if (bis == 1) begin
+         instruc_out <= tmp;
          imediat_out <= data_in;
          bis <= 0;
       end
