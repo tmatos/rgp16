@@ -13,7 +13,7 @@
 // modulo de Controle geral
 ///////////////////////////////////////////////////////////////////////////////
 module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
-               /*memwrite_addr_out,*/ set_memwrite_out, clk );
+               set_memread_out, set_memwrite_out, clk );
 
    input [15:0] instruc_in; // os 16 bits da instrucao
    output reg [3:0] read_reg_out; // registrador que devera ser lido
@@ -21,6 +21,7 @@ module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
    output reg set_regwrite_out; // indica que havera escrita no registrador
    //output reg [15:0] memwrite_addr_out; // endereco da memoria onde escreveremos
    output reg set_memwrite_out; // indica que havera escrita num endereco de memoria
+   output reg set_memread_out; // indica que havera leitura num endereco de memoria
    input clk;
    
    wire [7:0] op; // pra deixar o codigo mais compacto
@@ -32,22 +33,22 @@ module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
          read_reg_out <= instruc_in[3:0];
          write_reg_out <= instruc_in[7:4];
          set_regwrite_out <= 1;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 0;
+         set_memread_out <= 1;
       end
       else if (op == `LW1) begin // LW  R, I
          read_reg_out <= 4'h0;
          write_reg_out <= instruc_in[7:4];
          set_regwrite_out <= 1;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 0;
+         set_memread_out <= 0;
       end
       else if (op == `SW) begin // SW  R, I(R)
          read_reg_out <= instruc_in[7:4];
          write_reg_out <= 4'h0;
          set_regwrite_out <= 0;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 1;
+         set_memread_out <= 0;
       end
       else if (op == `ADD || op == `SUB || op == `MUL  || op == `DIV ||
                op == `AND || op == `OR  || op == `CMP )  // oper. aritm/logics como: ADD R0, R1
@@ -55,24 +56,52 @@ module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
          read_reg_out <= instruc_in[3:0];
          write_reg_out <= instruc_in[7:4];
          set_regwrite_out <= 1;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 0;
+         set_memread_out <= 0;
       end
       else if (op == `NOT ) begin // NOT  R
          read_reg_out <= instruc_in[7:4];
          write_reg_out <= instruc_in[7:4];
          set_regwrite_out <= 1;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 0;
+         set_memread_out <= 0;
       end
-      // faltam as Branch controls
+      else if (op == `JR ) begin // JR R
+         read_reg_out <= instruc_in[7:4];
+         write_reg_out <= 4'h0;
+         set_regwrite_out <= 0;
+         set_memwrite_out <= 0;
+         set_memread_out <= 0;
+      end
+      else if (op == `BRFL ) begin // BRFL R, I
+         read_reg_out <= instruc_in[3:0];
+         write_reg_out <= 4'h0;
+         set_regwrite_out <= 0;
+         set_memwrite_out <= 0;
+         set_memread_out <= 0;
+      end
+      else if (op == `CALL ) begin // CALL R
+         read_reg_out <= instruc_in[7:4];
+         write_reg_out <= 4'h0;
+         set_regwrite_out <= 0;
+         set_memwrite_out <= 0;
+         set_memread_out <= 0;
+      end
+      else if (op == `RET ) begin // RET
+         // TODO !
+         read_reg_out <= 4'h0;
+         write_reg_out <= 4'h0;
+         set_regwrite_out <= 0;
+         set_memwrite_out <= 0;
+         set_memread_out <= 0;
+      end
       // e as de Sprites e imgs ainda
       else begin
          write_reg_out <= 4'h0;
          read_reg_out <= 4'h0;
          set_regwrite_out <= 0;
-         //memwrite_addr_out <= `NULO;
          set_memwrite_out <= 0;
+         set_memread_out <= 0;
       end
    end
    

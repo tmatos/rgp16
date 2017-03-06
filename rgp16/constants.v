@@ -20,6 +20,11 @@
 `define  OR   8'b01001000
 `define  CMP  8'b01001001
 `define  NOT  8'b00101010
+`define  JR   8'b00101011
+`define  BRFL 8'b10101100
+`define  CALL 8'b00101101
+`define  RET  8'b00001110
+`define  NOP  8'b00001111
 
 // registradores
 `define  ZERO 4'b0000

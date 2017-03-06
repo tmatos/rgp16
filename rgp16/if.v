@@ -56,7 +56,7 @@ endmodule
 ///////////////////////////////////////////////////////////////////////////////
 // adaptador para uso de instrucoes variaveis (16 ou 32 bits)
 ///////////////////////////////////////////////////////////////////////////////
-module adap(data_in, instruc_out, imediat_out, clk);
+module adap(data_in, instruc_out, imediat_out, clk);  // AINDA NAO ESTOU USANDO
    input [15:0] data_in;
    output reg [15:0] instruc_out;
    output reg [15:0] imediat_out;
