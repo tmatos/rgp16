@@ -31,7 +31,7 @@ module rgp16( input wire clock,
                output wire D_MEM_SET_MEMREAD,
                output wire[15:0] D_MEM_MEMOFF_ADDR,
                output wire[15:0] D_MEM_RESULT,
-               output wire[3:0] D_EX_ALU_OP,
+               output wire[3:0] D_EX_ULA_OP,
                output wire[3:0] D_MEM_DESTINREG,
                output wire D_MEM_SET_REGWRITE,
                output wire D_MEM_SET_MEMWRITE,
@@ -225,7 +225,7 @@ module rgp16( input wire clock,
    assign D_EX_A = w_ex_a_regval;
    assign D_EX_B = w_ex_b_regval;
    assign D_EX_IMED = w_ex_imedi;
-   assign D_EX_ALU_OP = w_ex_ulaop;
+   assign D_EX_ULA_OP = w_ex_ulaop;
 
 
    //== MEM stage ===========================================================//
