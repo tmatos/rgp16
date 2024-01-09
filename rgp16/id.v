@@ -12,19 +12,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 // modulo de Controle geral
 ///////////////////////////////////////////////////////////////////////////////
-module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
-               set_memread_out, set_memwrite_out, clk );
+module control(instruc_in,
+               read_reg_out,
+               write_reg_out,
+               set_regwrite_out,
+               set_memread_out,
+               set_memwrite_out,
+               clk);
 
-   input [15:0] instruc_in; // os 16 bits da instrucao
-   output reg [3:0] read_reg_out; // registrador que devera ser lido
-   output reg [3:0] write_reg_out; // registrador que devera ser escrito
-   output reg set_regwrite_out; // indica que havera escrita no registrador
-   //output reg [15:0] memwrite_addr_out; // endereco da memoria onde escreveremos
-   output reg set_memwrite_out; // indica que havera escrita num endereco de memoria
-   output reg set_memread_out; // indica que havera leitura num endereco de memoria
+   input [15:0] instruc_in;                // os 16 bits da instrucao
+   output reg [3:0] read_reg_out;          // registrador que devera ser lido
+   output reg [3:0] write_reg_out;         // registrador que devera ser escrito
+   output reg set_regwrite_out;            // indica que havera escrita no registrador
+   //output reg [15:0] memwrite_addr_out;  // endereco da memoria onde escreveremos
+   output reg set_memwrite_out;            // indica que havera escrita num endereco de memoria
+   output reg set_memread_out;             // indica que havera leitura num endereco de memoria
    input clk;
    
-   wire [7:0] op; // pra deixar o codigo mais compacto
+   wire [7:0] op;                          // pra deixar o codigo mais compacto
    assign op = instruc_in[15:8];
    
    always @(posedge clk) //(instruc_in, op)
@@ -50,8 +55,9 @@ module control(instruc_in, read_reg_out, write_reg_out, set_regwrite_out,
          set_memwrite_out <= 1;
          set_memread_out <= 0;
       end
-      else if (op == `ADD || op == `SUB || op == `MUL  || op == `DIV ||
-               op == `AND || op == `OR  || op == `CMP )  // oper. aritm/logics como: ADD R0, R1
+      else if (op == `ADD || op == `SUB ||
+               op == `MUL || op == `DIV ||
+               op == `AND || op == `OR  || op == `CMP )  // operadores aritmeticos/logicos, ex.: ADD R0, R1
       begin
          read_reg_out <= instruc_in[3:0];
          write_reg_out <= instruc_in[7:4];
@@ -112,21 +118,27 @@ endmodule
 ///////////////////////////////////////////////////////////////////////////////
 // Registradores
 ///////////////////////////////////////////////////////////////////////////////
-module registers(sel_reg0, sel_reg1, reg0_out, reg1_out,
-                 setwrite_in, sel_regwrite_in, data_in, clk);
+module registers(sel_reg0,
+                 sel_reg1,
+                 reg0_out,
+                 reg1_out,
+                 setwrite_in,
+                 sel_regwrite_in,
+                 data_in,
+                 clk);
                  
-   input [3:0] sel_reg0; // selec qual regist. eh primeiro
-   input [3:0] sel_reg1; // selec qual regist. eh segundo
+   input [3:0] sel_reg0;          // seleciona qual registrador eh primeiro
+   input [3:0] sel_reg1;          // seleciona qual registrador eh segundo
    
    output reg [15:0] reg0_out;
    output reg [15:0] reg1_out;
    
-   input setwrite_in; // 1 pra gravar
-   input [3:0] sel_regwrite_in; // selec qual regist. a ser escrito
-   input [15:0] data_in; // dado a ser gravado
+   input setwrite_in;             // 1 pra gravar
+   input [3:0] sel_regwrite_in;   // seleciona qual registrador a ser escrito
+   input [15:0] data_in;          // dado a ser gravado
    input clk;
    
-   reg [15:0] regs [0:7]; // TODO: por mais registradores
+   reg [15:0] regs [0:7];         // TODO: por mais registradores
    
    // demux (escrita)
    always @(posedge clk) begin
